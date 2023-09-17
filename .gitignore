@@ -1,0 +1,10 @@
+# Ignore compiled files
+*.o
+*.out
+
+# Ignore executable files
+hsh
+
+# Ignore build directories
+build/
+
