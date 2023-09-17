@@ -17,19 +17,15 @@
 void process_input(void)
 {
 	char *buffer;
-	char *cwd;
+	char *cwd = getcwd(NULL, 0);
 	char *prompt;
-	char *home_dir = getenv("HOME");
 
 	while (1)
 	{
 		cwd = getcwd(NULL, 0);
-		if (cwd == NULL)
-		{
-			perror("getcwd");
-			exit(EXIT_FAILURE);
-		}
-		prompt = generate_prompt(cwd, home_dir);
+		prompt = malloc(strlen(cwd) + 4);
+		strcpy(prompt, cwd);
+		strcat(prompt, " $ ");
 		write(STDOUT_FILENO, prompt, strlen(prompt));
 		buffer = custom_getline();
 		if (buffer == NULL)
@@ -39,9 +35,9 @@ void process_input(void)
 		}
 		process_command(buffer);
 		free(buffer);
-		free(cwd);
 		free(prompt);
 	}
+	free(cwd);
 }
 
 /**
