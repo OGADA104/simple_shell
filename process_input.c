@@ -17,27 +17,32 @@
 void process_input(void)
 {
 	char *buffer;
-	char *cwd = getcwd(NULL, 0);
-	char *prompt;
+	char dollar_sign[] = " $ ";
+        ssize_t No_of_chars_in_buffer;
+	size_t initial_bufsize = 0;
 
 	while (1)
 	{
-		cwd = getcwd(NULL, 0);
-		prompt = malloc(strlen(cwd) + 4);
-		strcpy(prompt, cwd);
-		strcat(prompt, " $ ");
-		write(STDOUT_FILENO, prompt, strlen(prompt));
-		buffer = custom_getline();
+		char *current_directory;
+                char *full_prompt;
+
+		current_directory = getcwd(NULL, 0);
+		full_prompt = malloc(strlen(current_directory) + 4);
+		strcpy(full_prompt, current_directory);
+		free(current_directory);
+		strcat(full_prompt, dollar_sign);
+		write(STDOUT_FILENO, full_prompt, strlen(full_prompt));
+		free(full_prompt);
+
+		No_of_chars_in_buffer = getline(&buffer, &initial_bufsize, stdin);
 		if (buffer == NULL)
 		{
-			printf("\n");
+			printf("Memory allocation failed\n");
 			break;
 		}
-		process_command(buffer);
+		process_command(buffer, No_of_chars_in_buffer);
 		free(buffer);
-		free(prompt);
 	}
-	free(cwd);
 }
 
 /**
@@ -48,10 +53,9 @@ void process_input(void)
  * corresponding action, such as executing a command or changing
  * the directory.
  */
-void process_command(char *command)
+void process_command(char *command, size_t len)
 {
-	size_t len = strlen(command);
-
+	
 	if (len > 0 && command[len - 1] == '\n')
 	{
 		command[len - 1] = '\0';
