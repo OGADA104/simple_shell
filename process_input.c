@@ -98,6 +98,7 @@ void print_environment(void)
  * It returns the dynamically allocated prompt string.
  */
 
+/*
 char *generate_prompt(char *cwd, char *home_dir)
 {
 	char *prompt;
@@ -123,3 +124,4 @@ char *generate_prompt(char *cwd, char *home_dir)
 	}
 	return (prompt);
 }
+*/
