@@ -1,6 +1,12 @@
 #include "main.h"
 #include <stdio.h>
 #include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
 /**
  * custom_getline - Read a line of text from standard input
  *
@@ -9,9 +15,22 @@
  */
 char *custom_getline(void)
 {
+	char *buffer = NULL;
 	size_t bufsize = 0;
-	char *line = NULL;
+	ssize_t nread = getline(&buffer, &bufsize, stdin);
 
-	getline(&line, &bufsize, stdin);
-	return (line);
+	if (nread == -1)
+	{
+		if (feof(stdin))
+		{
+			free(buffer);
+			return (NULL);
+		}
+		else
+		{
+			perror("getline");
+			exit(EXIT_FAILURE);
+		}
+	}
+	return (buffer);
 }

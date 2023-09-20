@@ -28,7 +28,7 @@ void process_input(void)
 		strcat(prompt, " $ ");
 		write(STDOUT_FILENO, prompt, strlen(prompt));
 		buffer = custom_getline();
-		if (buffer == NULL)
+		if (buffer == NULL || *buffer == '\0')
 		{
 			printf("\n");
 			break;
