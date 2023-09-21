@@ -6,7 +6,7 @@
 #include <sys/wait.h>
 #include <stddef.h>
 #include <unistd.h>
-#include "shellmain.h"
+#include "main.h"
 
 /**
  * process_input - Process user input.
@@ -16,21 +16,23 @@
  */
 void process_input(void)
 {
-	char *buffer = NULL;
+	char *buffer;
 	char dollar_sign[] = " $ ";
         ssize_t No_of_chars_in_buffer;
 	size_t initial_bufsize = 0;
-	char *current_directory;
-	char *full_prompt;
 
 	while (1)
 	{
+		char *current_directory;
+                char *full_prompt;
 
 		current_directory = getcwd(NULL, 0);
 		full_prompt = malloc(strlen(current_directory) + 4);
 		strcpy(full_prompt, current_directory);
+		free(current_directory);
 		strcat(full_prompt, dollar_sign);
 		write(STDOUT_FILENO, full_prompt, strlen(full_prompt));
+		free(full_prompt);
 
 		No_of_chars_in_buffer = getline(&buffer, &initial_bufsize, stdin);
 		if (buffer == NULL)
@@ -40,15 +42,12 @@ void process_input(void)
 		}
 		process_command(buffer, No_of_chars_in_buffer);
 		free(buffer);
-		free(full_prompt);
 	}
-	free(current_directory);
 }
 
 /**
  * process_command - Process a single user command.
  * @command: The user command to process.
- * @len: Length of the command.
  *
  * This function takes a single user command and performs the
  * corresponding action, such as executing a command or changing
@@ -56,103 +55,75 @@ void process_input(void)
  */
 void process_command(char *command, size_t len)
 {
-    char *token;
-    char *args[MAX_ARGS];
-    int arg_count = 0;
-
-    if (len > 0 && command[len - 1] == '\n')
-    {
-        command[len - 1] = '\0';
-    }
-
-    token = strtok(command, " ");
-
-    if (token == NULL)
-    {
-        return;
-    }
-
-    args[arg_count++] = token;
-
-    while ((token = strtok(NULL, " ")) != NULL && arg_count < MAX_ARGS - 1)
-    {
-        args[arg_count++] = token;
-    }
-
-    args[arg_count] = NULL;
-
-    if (strcmp(args[0], "exit") == 0)
-    {
-        exit(0);
-    }
-    else if (strcmp(args[0], "env") == 0)
-    {
-        print_environment();
-    }
-    else if (strcmp(args[0], "cd") == 0)
-    {
-        handle_cd_command(args[1]);
-    }
-    else
-    {
-        execute_command(args[0], args);
-    }
+	
+	if (len > 0 && command[len - 1] == '\n')
+	{
+		command[len - 1] = '\0';
+	}
+	if (strcmp(command, "exit") == 0)
+	{
+		exit(0);
+	}
+	else if (strcmp(command, "env") == 0)
+	{
+		print_environment();
+	}
+	else if (strncmp(command, "cd", 2) == 0)
+	{
+		handle_cd_command(command);
+	}
+	else
+	{
+		execute_command(command);
+	}
 }
-
-
-bool is_executable_in_path(const char *file) {
-    char *path = getenv("PATH");
-    char *path_copy;
-    char *dir;
-    char *path_buffer;
-
-    if (path == NULL) {
-        return false;
-    }
-
-    path_copy = strdup(path);
-    if (path_copy == NULL) {
-        perror("strdup");
-        return false;
-    }
-
-    dir = strtok(path_copy, ":");
-    while (dir != NULL) {
-        size_t path_buffer_len = strlen(dir) + strlen(file) + 2;
-        path_buffer = (char *)malloc(path_buffer_len);
-        if (path_buffer == NULL) {
-            perror("malloc");
-            free(path_copy);
-            return false;
-        }
-        
-        snprintf(path_buffer, path_buffer_len, "%s/%s", dir, file);
-        if (access(path_buffer, X_OK) == 0) {
-            free(path_buffer);
-            free(path_copy);
-            return true;
-        }
-        free(path_buffer);
-        dir = strtok(NULL, ":");
-    }
-
-    free(path_copy);
-    return false;
-}
-
-
-
 
 /**
  * print_environment - Print the current environment variables.
  */
 void print_environment(void)
 {
-	char **env_varia = environ;
+	char **env_var = environ;
 
-	while (*env_varia != NULL)
+	while (*env_var != NULL)
 	{
-		_printf("%s\n", *env_varia);
-		env_varia++;
+		printf("%s\n", *env_var);
+		env_var++;
 	}
+}
+
+/**
+ * generate_prompt - Generate the shell prompt.
+ * @cwd: The current working directory.
+ * @home_dir: The user's home directory.
+ *Return: dynamically allocated prompt string
+ * This function generates the shell prompt string that includes
+ * the current working directory (cwd) and the home directory.
+ * It returns the dynamically allocated prompt string.
+ */
+
+char *generate_prompt(char *cwd, char *home_dir)
+{
+	char *prompt;
+	char *relative_cwd;
+
+	if (strcmp(cwd, home_dir) == 0)
+	{
+		prompt = strdup("~$ ");
+	}
+	else
+	{
+		relative_cwd = strstr(cwd, home_dir);
+		if (relative_cwd != NULL)
+		{
+			prompt = malloc(strlen(relative_cwd) + 3);
+			sprintf(prompt, "~%s$ ", relative_cwd + strlen(home_dir));
+		}
+		else
+		{
+			prompt = malloc(strlen(cwd) + 3);
+			sprintf(prompt, "%s$ ", cwd);
+		}
+	}
+	return (prompt);
 }

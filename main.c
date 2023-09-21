@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include "shellmain.h"
+#include "main.h"
 
 #define BUFFER_SIZE 1024
 
@@ -15,6 +15,6 @@
  */
 int main(void)
 {
-        process_input();
-        return (0);
+	process_input();
+	return (0);
 }

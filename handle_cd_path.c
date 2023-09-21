@@ -1,6 +1,6 @@
 #include <unistd.h>
 #include <stdio.h>
-#include "shellmain.h"
+#include "main.h"
 
 /**
  * handle_cd_with_path - Change the current directory to the specified path.
