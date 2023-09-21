@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "main.h"
+#include "shellmain.h"
 /**
  * handle_cd_command - Handle 'cd' command.
  *
