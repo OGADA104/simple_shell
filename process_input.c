@@ -18,16 +18,22 @@ void process_input(void)
 {
 	char *buffer;
 	char dollar_sign[] = " $ ";
-        ssize_t No_of_chars_in_buffer;
+	ssize_t No_of_chars_in_buffer;
 	size_t initial_bufsize = 0;
 
 	while (1)
 	{
 		char *current_directory;
-                char *full_prompt;
+		char *full_prompt;
 
 		current_directory = getcwd(NULL, 0);
 		full_prompt = malloc(strlen(current_directory) + 4);
+		if (full_prompt == NULL)
+		{
+			perror("Memory allocation failed");
+			free(current_directory);
+			break;
+		}
 		strcpy(full_prompt, current_directory);
 		free(current_directory);
 		strcat(full_prompt, dollar_sign);
@@ -35,27 +41,30 @@ void process_input(void)
 		free(full_prompt);
 
 		No_of_chars_in_buffer = getline(&buffer, &initial_bufsize, stdin);
-		if (buffer == NULL)
+		if (No_of_chars_in_buffer == -1)
 		{
-			printf("Memory allocation failed\n");
+			printf("\n");
 			break;
 		}
-		process_command(buffer, No_of_chars_in_buffer);
-		free(buffer);
+		if (buffer != NULL)
+		{
+			process_command(buffer, No_of_chars_in_buffer);
+			free(buffer);
+			buffer = NULL;
+		}
 	}
 }
 
 /**
  * process_command - Process a single user command.
  * @command: The user command to process.
- *
+ *@len: lenth of string
  * This function takes a single user command and performs the
  * corresponding action, such as executing a command or changing
  * the directory.
  */
 void process_command(char *command, size_t len)
 {
-	
 	if (len > 0 && command[len - 1] == '\n')
 	{
 		command[len - 1] = '\0';

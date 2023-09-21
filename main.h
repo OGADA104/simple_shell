@@ -11,4 +11,5 @@ void print_environment(void);
 char *generate_prompt(char *cwd, char *home_dir);
 void handle_cd_command(char *command);
 void handle_cd_with_path(char *path);
+int is_builtin( const char *command);
 #endif
